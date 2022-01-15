@@ -1,7 +1,5 @@
-from django.contrib.auth import get_user_model
 from django.db import models
-
-User = get_user_model()
+from users.models import User
 
 
 class Category(models.Model):
@@ -9,7 +7,9 @@ class Category(models.Model):
     slug = models.SlugField(max_length=50,
                             unique=True,
                             verbose_name='техническое имя')
-    description = models.TextField(blank=True, verbose_name='описание')
+    description = models.TextField(blank=True,
+                                   null=True,
+                                   verbose_name='описание')
 
     class Meta:
         verbose_name = "категория"
@@ -25,7 +25,9 @@ class Genre(models.Model):
     slug = models.SlugField(max_length=50,
                             unique=True,
                             verbose_name='техническое имя')
-    description = models.TextField(blank=True, verbose_name='описание')
+    description = models.TextField(blank=True,
+                                   null=True,
+                                   verbose_name='описание')
 
     class Meta:
         verbose_name = "жанр"
@@ -39,7 +41,9 @@ class Genre(models.Model):
 class Title(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
     year = models.PositiveSmallIntegerField(verbose_name='Год выпуска')
-    description = models.TextField(blank=True, verbose_name='Описание')
+    description = models.TextField(blank=True,
+                                   null=True,
+                                   verbose_name='Описание')
     genre = models.ManyToManyField(Genre,
                                    through='TitleGenre',
                                    verbose_name='жанр')
