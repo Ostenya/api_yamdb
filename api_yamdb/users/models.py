@@ -8,7 +8,6 @@ class User(AbstractUser):
         ('moderator', 'Модератор'),
         ('admin', 'Администратор'),
     )
-
     bio = models.TextField(
         verbose_name='Биография',
         blank=True,
@@ -19,3 +18,8 @@ class User(AbstractUser):
         choices=ROLES,
         default='user',
     )
+
+    def save(self, *args, **kwargs):
+        if self.is_superuser:
+            self.role = 'admin'
+        super(User, self).save(*args, **kwargs)
