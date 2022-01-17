@@ -7,14 +7,6 @@ from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 
 
-class UserSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        fields = ('username', 'email', 'first_name',
-                  'last_name', 'bio', 'role')
-        model = User
-
-
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -74,3 +66,29 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date')
         model = Comment
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )
+
+
+class UserSelfSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role',
+        )

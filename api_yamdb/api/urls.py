@@ -1,8 +1,11 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from api.views import (CategoryViewSet, CommentViewSet, GenreViewSet,
-                       ReviewViewSet, TitleViewSet, UserViewSet)
+                       ReviewViewSet, TitleViewSet, SignUpView,
+                       UserViewSet, UserSelfView,)
+
 
 app_name = 'api'
 
@@ -18,8 +21,19 @@ router_v1.register(
     CommentViewSet,
     basename='v1_comments'
 )
+router_v1.register('users', UserViewSet, basename='v1_users')
 
 urlpatterns = [
-    path('v1/', include('djoser.urls.jwt')),
     path('v1/', include(router_v1.urls)),
+    path(
+        'v1/auth/signup/',
+        SignUpView.as_view(),
+        name='sign_up'
+    ),
+    path(
+        'v1/auth/token/',
+        TokenObtainPairView.as_view(),
+        name='token_obtain_pair'
+    ),
+    path('v1/users/me', UserSelfView.as_view()),
 ]
