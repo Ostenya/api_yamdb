@@ -25,9 +25,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'debug_toolbar',
+    'reviews.apps.ReviewsConfig',
     'users.apps.UsersConfig',
     'api.apps.ApiConfig',
-    'reviews.apps.ReviewsConfig',
 ]
 
 MIDDLEWARE = [

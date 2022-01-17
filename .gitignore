@@ -148,3 +148,5 @@ dmypy.json
 # папки со статикой и медиа
 media/
 
+# my wrong code
+/api_yamdb/load_data.py
