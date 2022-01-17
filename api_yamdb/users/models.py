@@ -8,6 +8,11 @@ class User(AbstractUser):
         ('moderator', 'Модератор'),
         ('admin', 'Администратор'),
     )
+    email = models.EmailField(
+        verbose_name='Электронный адрес',
+        blank=False,
+        unique=True,
+    )
     bio = models.TextField(
         verbose_name='Биография',
         blank=True,
