@@ -13,7 +13,8 @@ from api.permissions import (AdminOnly, AdminOrReadOnly,
 from api.serializers import (CategorySerializer, CommentSerializer,
                              GenreSerializer, ReviewSerializer,
                              TitleSerializer, UserSerializer,
-                             SignUpSerializer, MyTokenObtainSerializer,)
+                             UserSelfSerializer, SignUpSerializer,
+                             MyTokenObtainSerializer,)
 from reviews.models import Category, Genre, Title
 from users.models import User
 
@@ -85,6 +86,7 @@ class SignUpView(APIView):
                 username=serializer.data['username']
             )
             confirmation_code = default_token_generator.make_token(s_user)
+            s_user.extendeduser.confirmation_code = confirmation_code
             send_mail(
                 'Код потверждения',
                 f'Ваш код подтверждения: {confirmation_code}',
@@ -104,12 +106,27 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class UserSelfView(generics.RetrieveUpdateAPIView):
-    serializer_class = UserSerializer
+    serializer_class = UserSelfSerializer
 
     def get_object(self):
         obj = get_object_or_404(User, username=self.request.user.username)
         self.check_object_permissions(self.request, obj)
         return obj
+
+
+class UserSelfView2(APIView):
+    def get(self, request):
+        user = get_object_or_404(User, username=request.user.username)
+        serializer = UserSelfSerializer(user)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        user = get_object_or_404(User, username=request.user.username)
+        serializer = UserSelfSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MyTokenObtainView(TokenViewBase):

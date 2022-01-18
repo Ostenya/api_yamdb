@@ -1,11 +1,12 @@
 from django.db.models import Avg
 from django.utils import timezone
-from django.contrib.auth.tokens import default_token_generator
-from rest_framework import exceptions, serializers
+from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth import authenticate
+from rest_framework import serializers, exceptions
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
-from rest_framework_simplejwt.serializers import (TokenObtainSerializer,
-                                                  PasswordField)
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.serializers import PasswordField
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 
@@ -84,6 +85,11 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
 
+class UserSelfSerializer(UserSerializer):
+    class Meta(UserSerializer.Meta):
+        read_only_fields = ('username', 'email', 'role',)
+
+
 class SignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -92,10 +98,6 @@ class SignUpSerializer(serializers.ModelSerializer):
             'username',
             'email',
         )
-        extra_kwargs = {'username': {'required': True,
-                                     'allow_blank': False},
-                        'email': {'required': True,
-                                  'allow_blank': False}}
 
     def validate_username(self, value):
         if (
@@ -112,22 +114,31 @@ class SignUpSerializer(serializers.ModelSerializer):
         return value
 
 
-class MyTokenObtainSerializer(TokenObtainSerializer):
-    confirmation_code = PasswordField()
+class MyTokenObtainSerializer(serializers.Serializer):
+    username_field = User.USERNAME_FIELD
+
+    default_error_messages = {
+        'no_active_account': _('No active account found'
+                               'with the given credentials')
+    }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields[self.username_field] = serializers.CharField()
+        self.fields['confirmation_code'] = PasswordField()
 
     def validate(self, attrs):
-        if not default_token_generator.check_token(
-            self.user,
-            attrs['confirmation_code']
-        ):
-            raise exceptions.AuthenticationFailed(
-                f'Некорректный код подтверждения {attrs['confirmation_code']},
-            )
-        if (
-            not User.objects.filter(username=self.user.username).exists()
-            or not self.user.is_active
-        ):
-            raise exceptions.AuthenticationFailed(
-                f'Активный пользователь с таким именем {self.user} не найден'
-            )
-        return {}
+        authenticate_kwargs = {
+            self.username_field: attrs[self.username_field],
+            'confirmation_code': attrs['confirmation_code'],
+        }
+        try:
+            authenticate_kwargs['request'] = self.context['request']
+        except KeyError:
+            pass
+        self.user = authenticate(**authenticate_kwargs)
+        if not User.objects.filter(username=attrs[self.username_field]).exists():
+            raise exceptions.NotFound('Несуществующий пользователь')
+        if self.user is None or not self.user.is_active:
+            raise exceptions.ValidationError('Невалидный код')
+        return {'access_token': str(AccessToken.for_user(self.user))}
