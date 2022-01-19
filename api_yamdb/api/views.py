@@ -80,11 +80,16 @@ class SignUpView(APIView):
     def post(self, request):
         serializer = SignUpSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            s_user = get_object_or_404(
-                User,
-                username=serializer.data['username']
-            )
+            try:
+                s_user = get_object_or_404(
+                    User,
+                    username=serializer.validated_data['username'],
+                    email=serializer.validated_data['email'],
+                )
+            except Exception:
+                s_user = serializer.save()
+            s_user.is_active = True
+            s_user.save()
             confirmation_code = default_token_generator.make_token(s_user)
             send_mail(
                 'Код потверждения',
