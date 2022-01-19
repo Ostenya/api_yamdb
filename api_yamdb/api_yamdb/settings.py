@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_filters',
     'rest_framework_simplejwt',
     'debug_toolbar',
     'reviews.apps.ReviewsConfig',
@@ -125,7 +126,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': ('rest_framework.pagination.'
                                  'PageNumberPagination'),
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 5,
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'

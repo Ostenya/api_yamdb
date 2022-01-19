@@ -72,6 +72,7 @@ def create_titles(admin_client):
     data = {'name': 'Проект', 'year': 2020, 'genre': [genres[2]['slug']], 'category': categories[1]['slug'],
             'description': 'Главная драма года'}
     response = admin_client.post('/api/v1/titles/', data=data)
+    print(response.json())
     data['id'] = response.json()['id']
     result.append(data)
     return result, categories, genres

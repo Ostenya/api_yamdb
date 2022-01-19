@@ -45,7 +45,6 @@ class Title(models.Model):
                                    through='TitleGenre',
                                    verbose_name='жанр')
     category = models.ForeignKey(Category,
-                                 to_field='slug',
                                  on_delete=models.SET_NULL,
                                  blank=True,
                                  null=True,
