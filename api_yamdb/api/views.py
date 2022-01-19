@@ -1,12 +1,16 @@
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
+<<<<<<< HEAD
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, viewsets, generics, status
+=======
+from rest_framework import filters, permissions, viewsets, status
+>>>>>>> master
 from rest_framework.views import APIView
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenViewBase
-
 from rest_framework.pagination import PageNumberPagination
 
 from api.permissions import (AdminOnly, AdminOrReadOnly,
@@ -14,7 +18,12 @@ from api.permissions import (AdminOnly, AdminOrReadOnly,
 from api.serializers import (CategorySerializer, CommentSerializer,
                              GenreSerializer, ReviewSerializer,
                              TitleSerializer, UserSerializer,
+<<<<<<< HEAD
                              SignUpSerializer, MyTokenObtainSerializer)
+=======
+                             UserSelfSerializer, SignUpSerializer,
+                             MyTokenObtainSerializer,)
+>>>>>>> master
 from reviews.models import Category, Genre, Title
 from users.models import User
 from rest_framework import permissions
@@ -113,14 +122,27 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (AdminOnly,)
     pagination_class = PageNumberPagination
 
-
-class UserSelfView(generics.RetrieveUpdateAPIView):
-    serializer_class = UserSerializer
-
-    def get_object(self):
-        obj = get_object_or_404(User, username=self.request.user.username)
-        self.check_object_permissions(self.request, obj)
-        return obj
+    @action(
+        methods=['get', 'patch'],
+        detail=False,
+        url_path='me',
+        permission_classes=(permissions.IsAuthenticated,)
+    )
+    def me_get(self, request):
+        user = get_object_or_404(User, username=request.user.username)
+        if request.method == 'GET':
+            serializer = UserSelfSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = UserSelfSerializer(
+            user,
+            data=request.data,
+            many=False,
+            partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MyTokenObtainView(TokenViewBase):
