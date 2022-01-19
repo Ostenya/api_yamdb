@@ -1,11 +1,11 @@
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
-from rest_framework import filters, permissions, viewsets, generics, status
+from rest_framework import filters, permissions, viewsets, status
 from rest_framework.views import APIView
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenViewBase
-
 from rest_framework.pagination import PageNumberPagination
 
 from api.permissions import (AdminOnly, AdminOrReadOnly,
@@ -86,7 +86,6 @@ class SignUpView(APIView):
                 username=serializer.data['username']
             )
             confirmation_code = default_token_generator.make_token(s_user)
-            s_user.extendeduser.confirmation_code = confirmation_code
             send_mail(
                 'Код потверждения',
                 f'Ваш код подтверждения: {confirmation_code}',
@@ -104,25 +103,23 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (AdminOnly,)
     pagination_class = PageNumberPagination
 
-
-class UserSelfView(generics.RetrieveUpdateAPIView):
-    serializer_class = UserSelfSerializer
-
-    def get_object(self):
-        obj = get_object_or_404(User, username=self.request.user.username)
-        self.check_object_permissions(self.request, obj)
-        return obj
-
-
-class UserSelfView2(APIView):
-    def get(self, request):
+    @action(
+        methods=['get', 'patch'],
+        detail=False,
+        url_path='me',
+        permission_classes=(permissions.IsAuthenticated,)
+    )
+    def me_get(self, request):
         user = get_object_or_404(User, username=request.user.username)
-        serializer = UserSelfSerializer(user)
-        return Response(serializer.data)
-
-    def patch(self, request):
-        user = get_object_or_404(User, username=request.user.username)
-        serializer = UserSelfSerializer(user, data=request.data, partial=True)
+        if request.method == 'GET':
+            serializer = UserSelfSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = UserSelfSerializer(
+            user,
+            data=request.data,
+            many=False,
+            partial=True
+        )
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

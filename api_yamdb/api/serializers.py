@@ -1,7 +1,7 @@
+from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth import authenticate
+from django.contrib.auth.tokens import default_token_generator
 from rest_framework import serializers, exceptions
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
@@ -100,27 +100,14 @@ class SignUpSerializer(serializers.ModelSerializer):
         )
 
     def validate_username(self, value):
-        if (
-            User.objects.filter(username=value).exists()
-            or value == 'me'
-        ):
+        if value == 'me':
             raise serializers.ValidationError(
-                'Укажите непустой уникальный username, отличный от me')
-        return value
-
-    def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError('Нужен уникальный email')
+                'Укажите username, отличный от me')
         return value
 
 
 class MyTokenObtainSerializer(serializers.Serializer):
     username_field = User.USERNAME_FIELD
-
-    default_error_messages = {
-        'no_active_account': _('No active account found'
-                               'with the given credentials')
-    }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -128,17 +115,15 @@ class MyTokenObtainSerializer(serializers.Serializer):
         self.fields['confirmation_code'] = PasswordField()
 
     def validate(self, attrs):
-        authenticate_kwargs = {
-            self.username_field: attrs[self.username_field],
-            'confirmation_code': attrs['confirmation_code'],
-        }
-        try:
-            authenticate_kwargs['request'] = self.context['request']
-        except KeyError:
-            pass
-        self.user = authenticate(**authenticate_kwargs)
-        if not User.objects.filter(username=attrs[self.username_field]).exists():
-            raise exceptions.NotFound('Несуществующий пользователь')
+        self.user = get_object_or_404(
+            User,
+            username=attrs[self.username_field]
+        )
         if self.user is None or not self.user.is_active:
-            raise exceptions.ValidationError('Невалидный код')
+            raise exceptions.ValidationError('Несуществующий пользователь')
+        if not default_token_generator.check_token(
+            self.user,
+            attrs['confirmation_code']
+        ):
+            raise exceptions.ValidationError('Невалидный код подтверждения')
         return {'access_token': str(AccessToken.for_user(self.user))}

@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from api.views import (CategoryViewSet, CommentViewSet, GenreViewSet,
                        ReviewViewSet, TitleViewSet, SignUpView,
-                       UserViewSet, UserSelfView, MyTokenObtainView)
+                       UserViewSet, MyTokenObtainView)
 
 
 app_name = 'api'
@@ -34,5 +34,5 @@ urlpatterns = [
         MyTokenObtainView.as_view(),
         name='token_obtain_pair'
     ),
-    path('v1/users/me', UserSelfView.as_view()),
+    # path('v1/users/me', UserSelfView.as_view()),
 ]
