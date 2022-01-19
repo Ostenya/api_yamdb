@@ -1,8 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework import serializers, exceptions
 from rest_framework.relations import SlugRelatedField
@@ -102,27 +100,14 @@ class SignUpSerializer(serializers.ModelSerializer):
         )
 
     def validate_username(self, value):
-        if (
-            User.objects.filter(username=value).exists()
-            or value == 'me'
-        ):
+        if value == 'me':
             raise serializers.ValidationError(
-                'Укажите непустой уникальный username, отличный от me')
-        return value
-
-    def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError('Нужен уникальный email')
+                'Укажите username, отличный от me')
         return value
 
 
 class MyTokenObtainSerializer(serializers.Serializer):
     username_field = User.USERNAME_FIELD
-
-    default_error_messages = {
-        'no_active_account': _('No active account found'
-                               'with the given credentials')
-    }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

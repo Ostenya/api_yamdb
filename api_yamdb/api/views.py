@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
-from rest_framework import filters, permissions, viewsets, generics, status
+from rest_framework import filters, permissions, viewsets, status
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -105,34 +105,21 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(
         methods=['get', 'patch'],
-        detail=True,
+        detail=False,
         url_path='me',
         permission_classes=(permissions.IsAuthenticated,)
     )
-    def users_me(self, request):
+    def me_get(self, request):
         user = get_object_or_404(User, username=request.user.username)
-        serializer = UserSelfSerializer(user, many=False)
-        return Response(serializer.data)
-
-
-class UserSelfView(generics.RetrieveUpdateAPIView):
-    serializer_class = UserSelfSerializer
-
-    def get_object(self):
-        obj = get_object_or_404(User, username=self.request.user.username)
-        self.check_object_permissions(self.request, obj)
-        return obj
-
-
-class UserSelfView2(APIView):
-    def get(self, request):
-        user = get_object_or_404(User, username=request.user.username)
-        serializer = UserSelfSerializer(user)
-        return Response(serializer.data)
-
-    def patch(self, request):
-        user = get_object_or_404(User, username=request.user.username)
-        serializer = UserSelfSerializer(user, data=request.data, partial=True)
+        if request.method == 'GET':
+            serializer = UserSelfSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = UserSelfSerializer(
+            user,
+            data=request.data,
+            many=False,
+            partial=True
+        )
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
