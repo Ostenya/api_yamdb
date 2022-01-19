@@ -3,9 +3,9 @@ from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework import filters, permissions, viewsets, generics, status
 from rest_framework.views import APIView
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenViewBase
-
 from rest_framework.pagination import PageNumberPagination
 
 from api.permissions import (AdminOnly, AdminOrReadOnly,
@@ -86,7 +86,6 @@ class SignUpView(APIView):
                 username=serializer.data['username']
             )
             confirmation_code = default_token_generator.make_token(s_user)
-            s_user.extendeduser.confirmation_code = confirmation_code
             send_mail(
                 'Код потверждения',
                 f'Ваш код подтверждения: {confirmation_code}',
@@ -103,6 +102,17 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     permission_classes = (AdminOnly,)
     pagination_class = PageNumberPagination
+
+    @action(
+        methods=['get', 'patch'],
+        detail=True,
+        url_path='me',
+        permission_classes=(permissions.IsAuthenticated,)
+    )
+    def users_me(self, request):
+        user = get_object_or_404(User, username=request.user.username)
+        serializer = UserSelfSerializer(user, many=False)
+        return Response(serializer.data)
 
 
 class UserSelfView(generics.RetrieveUpdateAPIView):
