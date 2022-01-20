@@ -154,3 +154,4 @@ media/
 
 # my wrong code
 /api_yamdb/load_data.py
+/api_yamdb/mytest.py

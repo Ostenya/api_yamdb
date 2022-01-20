@@ -36,12 +36,14 @@ def create_categories(admin_client):
         'name': 'Фильм',
         'slug': 'films'
     }
-    admin_client.post('/api/v1/categories/', data=data1)
+    response1 = admin_client.post('/api/v1/categories/', data=data1)
+    print(response1.json())
     data2 = {
         'name': 'Книги',
         'slug': 'books'
     }
-    admin_client.post('/api/v1/categories/', data=data2)
+    response2 = admin_client.post('/api/v1/categories/', data=data2)
+    print(response2.json())
     return [data1, data2]
 
 

@@ -3,7 +3,7 @@ from users.models import User
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=256, unique=True, verbose_name='имя')
+    name = models.CharField(max_length=256, verbose_name='имя')
     slug = models.SlugField(max_length=50,
                             unique=True,
                             verbose_name='техническое имя')

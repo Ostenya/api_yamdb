@@ -1,5 +1,4 @@
 from rest_framework import permissions
-from django.contrib.auth.tokens import default_token_generator
 
 
 class ModeratorAdminAuthorOrReadOnly(permissions.BasePermission):
