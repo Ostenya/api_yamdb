@@ -34,5 +34,4 @@ urlpatterns = [
         MyTokenObtainView.as_view(),
         name='token_obtain_pair'
     ),
-    # path('v1/users/me', UserSelfView.as_view()),
 ]
