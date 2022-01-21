@@ -1,16 +1,15 @@
 import django_filters
-from reviews.models import Category, Genre, Title
+from reviews.models import Title
 
 
 class TitleFilter(django_filters.FilterSet):
-    genre = django_filters.ModelChoiceFilter(field_name="genre",
-                                             to_field_name='slug',
-                                             queryset=Genre.objects.all()
-                                             )
-    category = django_filters.ModelChoiceFilter(field_name="category",
-                                                to_field_name='slug',
-                                                queryset=Category.objects.all()
-                                                )
+    name = django_filters.CharFilter(lookup_expr='contains')
+    genre = django_filters.CharFilter(
+        field_name='genre__slug', lookup_expr='contains'
+    )
+    category = django_filters.CharFilter(
+        field_name='category__slug', lookup_expr='contains'
+    )
 
     class Meta:
         model = Title
