@@ -17,7 +17,7 @@ from api.serializers import (CategorySerializer, CommentSerializer,
                              ReviewSerializer, SignUpSerializer,
                              TitlePostSerializer, TitleSerializer,
                              UserSelfSerializer, UserSerializer)
-from reviews.models import Category, Genre, Title
+from reviews.models import Category, Genre, Title, Review
 from users.models import User
 
 
@@ -95,9 +95,14 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    # permission_classes = (permissions.AllowAny,)
-    permission_classes = (ModeratorAdminAuthorOrReadOnly,)
     pagination_class = PageNumberPagination
+
+    def get_permissions(self):
+        if self.action == 'POST':
+            permission_classes = [permissions.IsAuthenticated]
+        else:
+            permission_classes = [ModeratorAdminAuthorOrReadOnly]
+        return [permission() for permission in permission_classes]
 
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
@@ -131,15 +136,19 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (ModeratorAdminAuthorOrReadOnly,)
     pagination_class = PageNumberPagination
 
-    def get_queryset(self):
+    def get_review(self):
         title_id = self.kwargs.get('title_id')
         review_id = self.kwargs.get('review_id')
-        title = get_object_or_404(Title, pk=title_id)
-        review = get_object_or_404(title.reviews.all(), pk=review_id)
-        return review.comments.all()
+        return get_object_or_404(Review, title__id=title_id, pk=review_id)
+
+    def get_queryset(self):
+        return self.get_review().comments.all()
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        serializer.save(
+            author=self.request.user,
+            review=self.get_review(),
+        )
 
 
 class SignUpView(APIView):

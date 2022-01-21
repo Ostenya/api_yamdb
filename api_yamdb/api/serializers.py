@@ -72,14 +72,18 @@ class ReviewSerializer(serializers.ModelSerializer):
                               default=serializers.CurrentUserDefault())
 
     class Meta:
-        fields = ('id', 'text', 'author',
-                  'score', 'pub_date')
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
         model = Review
-        read_only_fields = ('author',)
-        # validators = [UniqueTogetherValidator(
-        #     queryset=Review.objects.all(),
-        #     fields=('title', 'author')
-        # )]
+        read_only_fields = ('id', 'author', 'pub_date')
+
+    def validate(self, data):
+        if self.context.get('request').method == 'POST' and Review.objects.filter(
+            author=self.context.get('request').user,
+            title=self.context.get('view').kwargs.get('title_id')
+        ).exists():
+            raise serializers.ValidationError(
+                'Можно оставить только один отзыв на произведение')
+        return super().validate(data)
 
 
 class CommentSerializer(serializers.ModelSerializer):
