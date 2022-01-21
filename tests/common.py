@@ -36,12 +36,14 @@ def create_categories(admin_client):
         'name': 'Фильм',
         'slug': 'films'
     }
-    admin_client.post('/api/v1/categories/', data=data1)
+    response1 = admin_client.post('/api/v1/categories/', data=data1)
+    print(response1.json())
     data2 = {
         'name': 'Книги',
         'slug': 'books'
     }
-    admin_client.post('/api/v1/categories/', data=data2)
+    response2 = admin_client.post('/api/v1/categories/', data=data2)
+    print(response2.json())
     return [data1, data2]
 
 
@@ -72,6 +74,7 @@ def create_titles(admin_client):
     data = {'name': 'Проект', 'year': 2020, 'genre': [genres[2]['slug']], 'category': categories[1]['slug'],
             'description': 'Главная драма года'}
     response = admin_client.post('/api/v1/titles/', data=data)
+    print(response.json())
     data['id'] = response.json()['id']
     result.append(data)
     return result, categories, genres
