@@ -77,10 +77,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'author', 'pub_date')
 
     def validate(self, data):
-        if self.context.get('request').method == 'POST' and Review.objects.filter(
+        if (self.context.get('request').method == 'POST'
+            and Review.objects.filter(
             author=self.context.get('request').user,
             title=self.context.get('view').kwargs.get('title_id')
-        ).exists():
+        ).exists()):
             raise serializers.ValidationError(
                 'Можно оставить только один отзыв на произведение')
         return super().validate(data)
