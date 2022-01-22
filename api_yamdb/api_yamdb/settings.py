@@ -79,6 +79,10 @@ DATABASES = {
 
 AUTH_USER_MODEL = 'users.User'
 
+AUTHENTICATED_USER_ROLE = 'user'
+MODERATOR_ROLE = 'moderator'
+ADMINISTRATOR_ROLE = 'admin'
+
 # Password validation
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -131,6 +135,7 @@ REST_FRAMEWORK = {
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+DEFAULT_SENDER_EMAIL = 'from@api_yamdb.ru'
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=10),

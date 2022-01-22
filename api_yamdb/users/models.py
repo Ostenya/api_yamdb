@@ -1,12 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+from api_yamdb.settings import (AUTHENTICATED_USER_ROLE, MODERATOR_ROLE,
+                                ADMINISTRATOR_ROLE)
+
 
 class User(AbstractUser):
     ROLES = (
-        ('user', 'Аутентифицированный пользователь'),
-        ('moderator', 'Модератор'),
-        ('admin', 'Администратор'),
+        (AUTHENTICATED_USER_ROLE, 'Аутентифицированный пользователь'),
+        (MODERATOR_ROLE, 'Модератор'),
+        (ADMINISTRATOR_ROLE, 'Администратор'),
     )
     email = models.EmailField(
         verbose_name='Электронный адрес',
