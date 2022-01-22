@@ -10,7 +10,6 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenViewBase
-from reviews.models import Category, Genre, Review, Title
 
 from api_yamdb.settings import DEFAULT_SENDER_EMAIL
 from api.filters import TitleFilter
@@ -22,6 +21,8 @@ from api.serializers import (CategorySerializer, CommentSerializer,
                              ReviewSerializer, SignUpSerializer,
                              TitlePostSerializer, TitleSerializer,
                              UserSelfSerializer, UserSerializer)
+from reviews.models import Category, Genre, Review, Title
+
 
 User = get_user_model()
 
