@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
@@ -9,8 +10,11 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenViewBase
+from reviews.models import Category, Genre, Review, Title
 
+from api_yamdb.settings import DEFAULT_SENDER_EMAIL
 from api.filters import TitleFilter
+from api.mixins import CreateListDestroyViewSet
 from api.permissions import (AdminOnly, AdminOrReadOnly,
                              ModeratorAdminAuthorOrReadOnly)
 from api.serializers import (CategorySerializer, CommentSerializer,
@@ -18,14 +22,11 @@ from api.serializers import (CategorySerializer, CommentSerializer,
                              ReviewSerializer, SignUpSerializer,
                              TitlePostSerializer, TitleSerializer,
                              UserSelfSerializer, UserSerializer)
-from reviews.models import Category, Genre, Title, Review
-from api_yamdb.settings import DEFAULT_SENDER_EMAIL
-
 
 User = get_user_model()
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(CreateListDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
@@ -34,34 +35,8 @@ class CategoryViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name', 'slug',)
 
-    def retrieve(self, request, slug=None):
-        if not Category.objects.filter(slug=slug).exists():
-            return Response(f'Категория {slug} отсутствует',
-                            status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        else:
-            instance = self.get_object()
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
 
-    def update(self, request, *args, **kwargs):
-        slug = kwargs['slug']
-        if not Category.objects.filter(slug=slug).exists():
-            return Response(f'Категория {slug} отсутствует',
-                            status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        else:
-            partial = kwargs.pop('partial', False)
-            instance = self.get_object()
-            serializer = self.get_serializer(instance,
-                                             data=request.data,
-                                             partial=partial)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-            if getattr(instance, '_prefetched_objects_cache', None):
-                instance._prefetched_objects_cache = {}
-            return Response(serializer.data)
-
-
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(CreateListDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     lookup_field = 'slug'
@@ -69,32 +44,6 @@ class GenreViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name', 'slug',)
-
-    def retrieve(self, request, slug=None):
-        if not Genre.objects.filter(slug=slug).exists():
-            return Response(f'Жанр {slug} отсутствует',
-                            status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        else:
-            instance = self.get_object()
-            serializer = self.get_serializer(instance)
-            return Response(serializer.data)
-
-    def update(self, request, *args, **kwargs):
-        slug = kwargs['slug']
-        if not Genre.objects.filter(slug=slug).exists():
-            return Response(f'Категория {slug} отсутствует',
-                            status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        else:
-            partial = kwargs.pop('partial', False)
-            instance = self.get_object()
-            serializer = self.get_serializer(instance,
-                                             data=request.data,
-                                             partial=partial)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-            if getattr(instance, '_prefetched_objects_cache', None):
-                instance._prefetched_objects_cache = {}
-            return Response(serializer.data)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -121,7 +70,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     serializer_class = TitleSerializer
     permission_classes = (AdminOrReadOnly,)
     pagination_class = PageNumberPagination
