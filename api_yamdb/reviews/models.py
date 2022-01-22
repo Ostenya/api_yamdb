@@ -1,5 +1,8 @@
 from django.db import models
-from users.models import User
+from django.contrib.auth import get_user_model
+
+
+User = get_user_model()
 
 
 class Category(models.Model):
@@ -48,8 +51,8 @@ class Title(models.Model):
                                  on_delete=models.SET_NULL,
                                  blank=True,
                                  null=True,
-                                 related_name='title',
-                                 verbose_name='категория'
+                                 related_name='titles',
+                                 verbose_name='категории'
                                  )
 
     class Meta:
@@ -93,7 +96,7 @@ class Review(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='review',
+        related_name='reviews',
         verbose_name='автор'
     )
     text = models.TextField(verbose_name='текст')

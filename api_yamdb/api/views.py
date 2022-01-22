@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
@@ -18,7 +19,10 @@ from api.serializers import (CategorySerializer, CommentSerializer,
                              TitlePostSerializer, TitleSerializer,
                              UserSelfSerializer, UserSerializer)
 from reviews.models import Category, Genre, Title, Review
-from users.models import User
+from api_yamdb.settings import DEFAULT_SENDER_EMAIL
+
+
+User = get_user_model()
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -127,8 +131,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method in permissions.SAFE_METHODS:
             return TitleSerializer
-        else:
-            return TitlePostSerializer
+        return TitlePostSerializer
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -166,7 +169,7 @@ class SignUpView(APIView):
             send_mail(
                 'Код потверждения',
                 f'Ваш код подтверждения: {confirmation_code}',
-                'from@api_yamdb.ru',
+                DEFAULT_SENDER_EMAIL,
                 [serializer.data['email']],
             )
             return Response(serializer.data, status=status.HTTP_200_OK)

@@ -1,15 +1,18 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from rest_framework import serializers, exceptions
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.serializers import PasswordField
+
 from reviews.models import Category, Comment, Genre, Review, Title
-from users.models import User
-from django.shortcuts import get_object_or_404
+
+
+User = get_user_model()
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -79,8 +82,8 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if (self.context.get('request').method == 'POST'
             and Review.objects.filter(
-            author=self.context.get('request').user,
-            title=self.context.get('view').kwargs.get('title_id')
+                author=self.context.get('request').user,
+                title=self.context.get('view').kwargs.get('title_id')
         ).exists()):
             raise serializers.ValidationError(
                 'Можно оставить только один отзыв на произведение')
