@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
+from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
@@ -11,7 +12,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenViewBase
 
-from api_yamdb.settings import DEFAULT_SENDER_EMAIL
 from api.filters import TitleFilter
 from api.mixins import CreateListDestroyViewSet
 from api.permissions import (AdminOnly, AdminOrReadOnly,
@@ -119,7 +119,7 @@ class SignUpView(APIView):
             send_mail(
                 'Код потверждения',
                 f'Ваш код подтверждения: {confirmation_code}',
-                DEFAULT_SENDER_EMAIL,
+                settings.DEFAULT_SENDER_EMAIL,
                 [serializer.data['email']],
             )
             return Response(serializer.data, status=status.HTTP_200_OK)
