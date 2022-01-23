@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-from api_yamdb.settings import MODERATOR_ROLE, ADMINISTRATOR_ROLE
+from api_yamdb.settings import ADMINISTRATOR_ROLE, MODERATOR_ROLE
 
 
 class ModeratorAdminAuthorOrReadOnly(permissions.BasePermission):

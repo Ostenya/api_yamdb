@@ -1,6 +1,12 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+<<<<<<< HEAD
 from django.conf import settings
+=======
+from django.db import models
+
+from api_yamdb.settings import (ADMINISTRATOR_ROLE, AUTHENTICATED_USER_ROLE,
+                                MODERATOR_ROLE)
+>>>>>>> 4f69946f9208ce4c9cb340499247b064efe83b79
 
 
 class User(AbstractUser):
